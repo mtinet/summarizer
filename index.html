@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Gemini 요약기</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 2em auto; }
+    textarea { width: 100%; height: 200px; margin-bottom: 1em; }
+    button { padding: 10px 20px; font-size: 16px; }
+    #summary { margin-top: 1em; white-space: pre-line; background: #f0f0f0; padding: 1em; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h2>📄 Gemini 요약기 (5줄 요약)</h2>
+  <textarea id="inputText" placeholder="요약하고 싶은 자료를 여기에 붙여넣기..."></textarea>
+  <button onclick="summarize()">요약하기</button>
+  <div id="summary"></div>
+
+  <script>
+    async function summarize() {
+      const input = document.getElementById("inputText").value;
+      const summaryDiv = document.getElementById("summary");
+      summaryDiv.textContent = "🔄 요약 중입니다...";
+
+      // Changed model to gemini-1.5-flash
+      const url = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=AIzaSyDFMAf3wpl5aP3d-znfFQq2Osem1pxZRAg";
+
+      const requestBody = {
+        contents: [
+          {
+            parts: [
+              {
+                text: "다음 내용을 5줄로 요약해줘:\n\n" + input
+              }
+            ]
+          }
+        ]
+      };
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+        const result = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (result) {
+          summaryDiv.textContent = result;
+        } else {
+          summaryDiv.textContent = "⚠️ 요약 결과를 불러올 수 없습니다.";
+          console.error(data);
+        }
+      } catch (error) {
+        summaryDiv.textContent = "❌ 오류 발생: " + error.message;
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
